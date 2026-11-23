@@ -1,5 +1,10 @@
 name: Build Skate Penguin
 
+# Keep only the newest build queued for this branch.
+concurrency:
+  group: skate-penguin-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
