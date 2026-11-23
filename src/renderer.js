@@ -153,7 +153,7 @@ function setPose(pose, duration = 0) {
   state.pose = pose;
   state.poseUntil = duration ? Date.now() + duration : 0;
   const isSkating = pose === "skate" || pose === "trick";
-  window.petDesktop.setSkating(isSkating);
+  window.petDesktop?.setSkating(isSkating);
   pet.classList.toggle("sleeping", pose === "sleep");
   pet.classList.toggle("skating", isSkating);
   pet.classList.toggle("jumping", pose === "jump");
@@ -248,7 +248,12 @@ pet.onkeydown = (event) => {
   }
 };
 
-document.getElementById("close").onclick = () => window.petDesktop.close();
+const desktopOnly = Boolean(window.petDesktop);
+if (!desktopOnly) {
+  document.getElementById("close").hidden = true;
+  document.querySelector("footer").textContent = "Click Pip to interact · Your progress saves in this browser";
+}
+document.getElementById("close").onclick = () => window.petDesktop?.close();
 
 let dragging = false;
 let lastX = 0;
@@ -262,7 +267,7 @@ handle.addEventListener("mousedown", (event) => {
 });
 window.addEventListener("mousemove", (event) => {
   if (!dragging) return;
-  window.petDesktop.drag(event.screenX - lastX, event.screenY - lastY);
+  window.petDesktop?.drag(event.screenX - lastX, event.screenY - lastY);
   lastX = event.screenX;
   lastY = event.screenY;
 });
