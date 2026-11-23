@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skate Penguin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="pet-window">
+    <header class="topbar" id="drag-handle">
+      <span class="brand">PIP <span>•</span> SKATE CLUB</span>
+      <button class="close" id="close" title="Quit">×</button>
+    </header>
+    <section class="scene">
+      <div class="cloud cloud-a"></div><div class="cloud cloud-b"></div>
+      <div class="sun"></div>
+      <div class="pet-wrap" id="pet" role="button" tabindex="0" title="Click Pip!">
+        <canvas id="penguin" width="96" height="96"></canvas>
+        <div class="shadow"></div>
+      </div>
+      <div class="speech" id="speech">Hey! Let's skate!</div>
+      <div class="ground"></div>
+    </section>
+    <section class="stats">
+      <div class="stat"><label>HUNGER <span id="hunger-label">20%</span></label><div class="bar"><i id="hunger"></i></div></div>
+      <div class="stat"><label>HAPPY <span id="happy-label">80%</span></label><div class="bar pink"><i id="happy"></i></div></div>
+      <div class="stat"><label>ENERGY <span id="energy-label">90%</span></label><div class="bar green"><i id="energy"></i></div></div>
+    </section>
+    <nav class="actions">
+      <button id="feed"><span>🐟</span> Feed</button>
+      <button id="play"><span>🛹</span> Play</button>
+      <button id="nap"><span>🌙</span> Nap</button>
+    </nav>
+    <footer>Click Pip to interact · Drag to move</footer>
+  </main>
+  <script src="renderer.js"></script>
+</body>
+</html>
