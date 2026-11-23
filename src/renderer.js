@@ -7,7 +7,7 @@ const scene = document.querySelector(".scene");
 const stats = { hunger: 20, happy: 80, energy: 90 };
 const saved = JSON.parse(localStorage.getItem("pip-save") || "null");
 if (saved) Object.assign(stats, saved);
-const state = { pose: "idle", poseUntil: 0, blinkUntil: 0, x: 0, direction: 1, lastSkate: Date.now() };
+const state = { pose: "idle", poseUntil: 0, blinkUntil: 0, x: Math.max(0,scene.clientWidth/2-58), direction: 1, lastSkate: Date.now() };
 const colors = { navy:"#182945", dark:"#263c5e", white:"#fff8e8", orange:"#f28b38", orangeDark:"#db6c27", blue:"#3576d5", blueDark:"#2559a7", blueLight:"#6ca9ff", cyan:"#42d5e8", cyanDark:"#2389a9", wood:"#9a6239", woodDark:"#70452b" };
 function pixel(x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
 function drawPip(now) {
@@ -41,7 +41,7 @@ function update(){for(const key of Object.keys(stats)){stats[key]=Math.max(0,Mat
 function setPose(pose,duration=0){state.pose=pose;state.poseUntil=duration?Date.now()+duration:0;pet.classList.toggle("sleeping",pose==="sleep");}
 function animate(pose,duration=1500){setPose(pose,duration);}
 function bounds(){return Math.max(0,scene.clientWidth-116);}
-function frame(now){if(state.poseUntil&&Date.now()>state.poseUntil)setPose("idle");if(state.pose==="idle"&&Date.now()-state.lastSkate>12000&&stats.energy>15){state.lastSkate=Date.now();setPose("skate",2200);}if(state.pose==="skate"&&!state.poseUntil){state.x+=state.direction*1.1;if(state.x>=bounds()){state.x=bounds();state.direction=-1;}if(state.x<=0){state.x=0;state.direction=1;}}pet.style.left=state.x+"px";pet.style.transform="translateX(0) scaleX("+state.direction+")";drawPip(now);requestAnimationFrame(frame);}
+function frame(now){if(state.poseUntil&&Date.now()>state.poseUntil)setPose("idle");if(state.pose==="idle"&&Date.now()-state.lastSkate>12000&&stats.energy>15){state.lastSkate=Date.now();setPose("skate",2200);}if(state.pose==="skate"){state.x+=state.direction*1.1;if(state.x>=bounds()){state.x=bounds();state.direction=-1;}if(state.x<=0){state.x=0;state.direction=1;}}pet.style.left=state.x+"px";pet.style.transform="translateX(0) scaleX("+state.direction+")";drawPip(now);requestAnimationFrame(frame);}
 requestAnimationFrame(frame);
 setInterval(()=>{state.blinkUntil=Date.now()+130;},3500+Math.random()*2500);
 function handleAction(action){if(action==="feed"){stats.hunger=Math.max(0,stats.hunger-35);stats.happy=Math.min(100,stats.happy+8);update();say("Yum! Fish!! 🐟");animate("jump",900);}if(action==="play"){stats.happy=Math.min(100,stats.happy+18);stats.energy=Math.max(0,stats.energy-12);update();say("Kickflip time! 🛹");animate("skate",2200);}if(action==="nap"){stats.energy=Math.min(100,stats.energy+30);stats.hunger=Math.min(100,stats.hunger+5);update();say("Zzz...");animate("sleep",2600);}}
