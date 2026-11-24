@@ -300,3 +300,41 @@ setInterval(() => {
 }, 60000);
 
 update();
+
+
+// Desktop Mode is controlled by the app menu (View > Toggle Desktop Mode)
+// or Command/Ctrl+Shift+D. The browser demo keeps its regular pet layout.
+function applyDesktopMode(enabled) {
+  document.body.classList.toggle("desktop-mode", Boolean(enabled));
+  const dragTarget = enabled ? pet : handle;
+  handle.style.cursor = enabled ? "default" : "grab";
+  pet.style.cursor = enabled ? "grab" : "pointer";
+  if (enabled) {
+    pet.setAttribute("title", "Drag Pip around your desktop · Toggle Desktop Mode to show controls");
+  } else {
+    pet.setAttribute("title", "Click Pip!");
+  }
+}
+window.petDesktop?.onDesktopMode(applyDesktopMode);
+
+// In Desktop Mode, drag directly from Pip. In Pet Mode, use the title bar.
+let petDragging = false;
+pet.addEventListener("mousedown", (event) => {
+  if (!document.body.classList.contains("desktop-mode") || event.button !== 0) return;
+  petDragging = true;
+  dragging = true;
+  lastX = event.screenX;
+  lastY = event.screenY;
+});
+window.addEventListener("mousemove", (event) => {
+  if (!petDragging) return;
+  window.petDesktop?.drag(event.screenX - lastX, event.screenY - lastY);
+  lastX = event.screenX;
+  lastY = event.screenY;
+});
+window.addEventListener("mouseup", () => {
+  if (petDragging) {
+    petDragging = false;
+    dragging = false;
+  }
+});
