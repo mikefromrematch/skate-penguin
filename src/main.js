@@ -15,7 +15,7 @@ function startDesktopSkating() {
   if (skateTimer || !win) return;
   desktopDirection = 1;
   skateTimer = setInterval(() => {
-    if (!win || win.isDestroyed()) return stopDesktopSkating();
+    if (!win || win.isDestroyed() || win.isMinimized()) return stopDesktopSkating();
     const [x, y] = win.getPosition();
     const [width] = win.getSize();
     const area = screen.getDisplayMatching(win.getBounds()).workArea;
@@ -35,12 +35,21 @@ function setDesktopMode(enabled) {
     win.setMinimumSize(150, 150);
     win.setResizable(false);
     win.setSize(150, 150);
+    win.setSkipTaskbar(true);
   } else {
     win.setResizable(true);
     win.setMinimumSize(260, 320);
     win.setSize(300, 370);
+    win.setSkipTaskbar(false);
   }
   win.webContents.send("pet:desktop-mode", desktopMode);
+}
+
+function showPetWindow() {
+  if (!win || win.isDestroyed()) createWindow();
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
 }
 
 function createApplicationMenu() {
@@ -52,6 +61,9 @@ function createApplicationMenu() {
     {
       label: "View",
       submenu: [
+        { label: "Show Pet Window", accelerator: "CommandOrControl+Shift+M", click: showPetWindow },
+        { label: "Minimize Pet Window", accelerator: "CommandOrControl+M", click: () => win?.minimize() },
+        { type: "separator" },
         {
           label: "Toggle Desktop Mode",
           accelerator: "CommandOrControl+Shift+D",
@@ -75,7 +87,7 @@ function createWindow() {
     alwaysOnTop: true,
     resizable: true,
     hasShadow: false,
-    skipTaskbar: true,
+    skipTaskbar: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -96,7 +108,7 @@ app.whenReady().then(() => {
   createWindow();
 });
 app.on("window-all-closed", () => app.quit());
-app.on("activate", () => { if (!win) createWindow(); });
+app.on("activate", showPetWindow);
 
 ipcMain.on("pet:drag", (_event, { dx, dy }) => {
   if (!win) return;
@@ -107,4 +119,5 @@ ipcMain.on("pet:skating", (_event, active) => {
   if (active) startDesktopSkating();
   else stopDesktopSkating();
 });
+ipcMain.on("pet:minimize", () => win?.minimize());
 ipcMain.on("pet:close", () => app.quit());
