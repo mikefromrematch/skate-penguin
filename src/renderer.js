@@ -5,6 +5,7 @@ const pet = document.getElementById("pet");
 const speech = document.getElementById("speech");
 const scene = document.querySelector(".scene");
 let desktopMode = false;
+let desktopDirection = 1;
 const stats = { hunger: 20, happy: 80, energy: 90 };
 const positionKey = "pip-vertical-position";
 let pipVerticalOffset = Number(localStorage.getItem(positionKey) || 0);
@@ -114,7 +115,7 @@ function frame(now) {
 
   state.lastFrame = now;
   pet.style.left = state.x + "px";
-  pet.style.transform = "translateX(0) scaleX(" + state.direction + ")";
+  pet.style.transform = "translateX(0) scaleX(" + (desktopMode ? desktopDirection : state.direction) + ")";
   drawPip(now);
   requestAnimationFrame(frame);
 }
@@ -217,7 +218,7 @@ update();
 function applyDesktopMode(enabled) {
   desktopMode = Boolean(enabled);
   document.body.classList.toggle("desktop-mode", desktopMode);
-  window.petDesktop?.setSkating(desktopMode && (state.pose === "skate" || state.pose === "trick"));
+  if (desktopMode) { state.poseUntil = 0; setPose("skate"); } else { setPose("idle"); }
   state.x = Math.max(0, scene.clientWidth / 2 - 58);
   pet.style.left = state.x + "px";
   handle.style.cursor = desktopMode ? "default" : "grab";
@@ -227,6 +228,7 @@ function applyDesktopMode(enabled) {
     : "Click Pip!");
 }
 window.petDesktop?.onDesktopMode(applyDesktopMode);
+window.petDesktop?.onDesktopDirection((direction) => { desktopDirection = direction; });
 
 let petDragging = false;
 let suppressPetClick = false;
