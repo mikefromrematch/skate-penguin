@@ -5,6 +5,7 @@ const pet = document.getElementById("pet");
 const speech = document.getElementById("speech");
 const scene = document.querySelector(".scene");
 let desktopMode = false;
+let desktopDirection = 1;
 const stats = { hunger: 20, happy: 80, energy: 90 };
 const positionKey = "pip-vertical-position";
 let pipVerticalOffset = Number(localStorage.getItem(positionKey) || 0);
@@ -29,118 +30,24 @@ const state = {
   lastFrame: 0
 };
 
-const colors = {
-  navy: "#182945", dark: "#263c5e", white: "#fff8e8",
-  orange: "#f28b38", orangeDark: "#db6c27",
-  blue: "#3576d5", blueDark: "#2559a7", blueLight: "#6ca9ff",
-  cyan: "#42d5e8", cyanDark: "#2389a9",
-  wood: "#9a6239", woodDark: "#70452b", sparkle: "#fff2a8"
-};
-
-function pixel(x, y, w, h, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(Math.round(x), Math.round(y), w, h);
-}
-
-function drawSparkle(x, y, size, color) {
-  pixel(x + size, y, size, size, color);
-  pixel(x, y + size, size * 3, size, color);
-  pixel(x + size, y + size * 2, size, size, color);
-}
+const pipSprites = new Image();
+pipSprites.src = "../assets/pip-sprites.png";
 
 function drawPip(now) {
   ctx.clearRect(0, 0, 96, 96);
-  const skating = state.pose === "skate" || state.pose === "trick";
-  const skateFrame = skating ? Math.floor(now / 115) % 2 : 0;
-  const jumpFrame = state.pose === "jump" ? Math.floor(now / 100) % 2 : 0;
-  const sleeping = state.pose === "sleep";
-  const falling = state.pose === "fall";
-  const bob = state.pose === "idle"
-    ? Math.sin(now / 500) * 1.5
-    : skating ? (skateFrame ? 2 : -1)
-    : state.pose === "jump" ? -5 - jumpFrame * 3
-    : state.pose === "trick" ? -8 - Math.abs(Math.sin(now / 75)) * 5
-    : falling ? 5 : 1;
-  const lean = skating ? (skateFrame ? 3 : -3)
-    : state.pose === "jump" ? -2
-    : state.pose === "trick" ? Math.sin(now / 65) * 17
-    : falling ? 22 : 0;
-
-  ctx.save();
-  ctx.translate(48, bob + (falling ? 7 : 0));
-  ctx.rotate(lean * Math.PI / 180);
-  ctx.translate(-48, -48);
-
-  // Speed streaks and little trick sparkles.
-  if (skating) {
-    pixel(3, 54 + skateFrame * 3, 11, 2, "#ffffff");
-    pixel(8, 62 - skateFrame * 2, 7, 2, "#ffffff");
-    if (state.pose === "trick") {
-      drawSparkle(8, 28, 2, colors.sparkle);
-      drawSparkle(77, 48, 2, colors.sparkle);
-    }
-  }
-
-  // Board, spinning wheels, feet and body.
-  pixel(12, 76, 72, 5, colors.wood);
-  pixel(17, 79, 62, 2, colors.woodDark);
-  const wheelFrame = skating ? Math.floor(now / 55) % 3 : 0;
-  pixel(19, 81, 9, 5, colors.cyan);
-  pixel(68, 81, 9, 5, colors.cyan);
-  pixel(20 + wheelFrame, 82, 4, 3, colors.cyanDark);
-  pixel(69 + ((3 - wheelFrame) % 3), 82, 4, 3, colors.cyanDark);
-  pixel(34, 70, 12, 8, colors.orange);
-  pixel(53, 70, 12, 8, colors.orange);
-  pixel(31, 74, 18, 4, colors.orangeDark);
-  pixel(50, 74, 18, 4, colors.orangeDark);
-
-  pixel(27, 34, 42, 38, colors.navy);
-  pixel(22, 43, 52, 28, colors.navy);
-  pixel(25, 53, 46, 20, colors.navy);
-  pixel(34, 45, 28, 25, colors.white);
-  pixel(30, 49, 36, 20, colors.white);
-  pixel(35, 61, 26, 9, colors.white);
-
-  const wingY = skating ? (skateFrame ? 53 : 45)
-    : state.pose === "jump" || state.pose === "trick" ? 39
-    : falling ? 42 : 49;
-  pixel(18, wingY, 10, 17, colors.navy);
-  pixel(16, wingY + 7, 7, 8, colors.dark);
-  pixel(68, wingY, 10, 17, colors.navy);
-  pixel(73, wingY + 7, 7, 8, colors.dark);
-
-  pixel(28, 20, 42, 24, colors.navy);
-  pixel(32, 25, 32, 8, colors.navy);
-  pixel(31, 35, 12, 13, colors.white);
-  pixel(53, 35, 12, 13, colors.white);
-  const blink = now < state.blinkUntil || sleeping;
-  if (!blink) {
-    pixel(35, 38, 5, 7, colors.navy);
-    pixel(56, 38, 5, 7, colors.navy);
-    pixel(36, 39, 2, 2, "#fff");
-    pixel(57, 39, 2, 2, "#fff");
-  } else {
-    pixel(34, 42, 7, 2, colors.navy);
-    pixel(55, 42, 7, 2, colors.navy);
-  }
-
-  pixel(44, 43, 8, 5, colors.orange);
-  pixel(41, 47, 14, 4, colors.orangeDark);
-  // Signature backwards blue cap.
-  pixel(28, 20, 42, 8, colors.blue);
-  pixel(24, 24, 48, 5, colors.blue);
-  pixel(58, 18, 12, 8, colors.blueDark);
-  pixel(65, 19, 9, 7, colors.blueDark);
-  pixel(27, 19, 8, 5, colors.blueLight);
-  pixel(45, 17, 4, 3, "#8ec4ff");
-
-  if (state.pose === "jump" || state.pose === "trick") {
-    pixel(39, 57, 18, 3, colors.orangeDark);
-  }
-  if (sleeping) {
-    drawSparkle(74, 20, 2, "#ffffff");
-  }
-  ctx.restore();
+  if (!pipSprites.complete || !pipSprites.naturalWidth) return;
+  const frames = {
+    idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7],
+    jump: [8], happy: [8], surprised: [9], sad: [10],
+    fall: [10], sleep: [11]
+  };
+  const sequence = frames[state.pose] || frames.idle;
+  const speed = state.pose === "skate" ? 135
+    : state.pose === "trick" ? 165
+    : state.pose === "idle" ? 520 : 210;
+  const frame = sequence[Math.floor(now / speed) % sequence.length];
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(pipSprites, frame * 32, 0, 32, 32, 0, 0, 96, 96);
 }
 
 function say(text) {
@@ -163,7 +70,9 @@ function setPose(pose, duration = 0) {
   state.pose = pose;
   state.poseUntil = duration ? Date.now() + duration : 0;
   const isSkating = pose === "skate" || pose === "trick";
-  window.petDesktop?.setSkating(isSkating || desktopMode);
+  // In regular Pet Mode only Pip's CSS position changes inside the scene.
+  // Only Desktop Mode is allowed to animate the native Electron window.
+  window.petDesktop?.setSkating(desktopMode && isSkating);
   pet.classList.toggle("sleeping", pose === "sleep");
   pet.classList.toggle("skating", isSkating);
   pet.classList.toggle("jumping", pose === "jump");
@@ -198,7 +107,6 @@ function frame(now) {
       state.x = 0;
       state.direction = 1;
     }
-    // Pip occasionally throws in a tiny ollie while cruising.
     if (state.pose === "skate" && currentTime >= state.nextTrick) {
       state.nextTrick = currentTime + 5000;
       setPose("trick", 620);
@@ -207,7 +115,7 @@ function frame(now) {
 
   state.lastFrame = now;
   pet.style.left = state.x + "px";
-  pet.style.transform = "translateX(0) scaleX(" + state.direction + ")";
+  pet.style.transform = "translateX(0) scaleX(" + (desktopMode ? desktopDirection : state.direction) + ")";
   drawPip(now);
   requestAnimationFrame(frame);
 }
@@ -307,27 +215,21 @@ setInterval(() => {
 
 update();
 
-
-// Desktop Mode is controlled by the app menu (View > Toggle Desktop Mode)
-// or Command/Ctrl+Shift+D. The browser demo keeps its regular pet layout.
 function applyDesktopMode(enabled) {
   desktopMode = Boolean(enabled);
   document.body.classList.toggle("desktop-mode", desktopMode);
-  window.petDesktop?.setSkating(desktopMode || state.pose === "skate" || state.pose === "trick");
+  if (desktopMode) { state.poseUntil = 0; setPose("skate"); } else { setPose("idle"); }
   state.x = Math.max(0, scene.clientWidth / 2 - 58);
   pet.style.left = state.x + "px";
-  const dragTarget = enabled ? pet : handle;
-  handle.style.cursor = enabled ? "default" : "grab";
-  pet.style.cursor = enabled ? "grab" : "pointer";
-  if (enabled) {
-    pet.setAttribute("title", "Drag Pip around your desktop · Toggle Desktop Mode to show controls");
-  } else {
-    pet.setAttribute("title", "Click Pip!");
-  }
+  handle.style.cursor = desktopMode ? "default" : "grab";
+  pet.style.cursor = desktopMode ? "grab" : "pointer";
+  pet.setAttribute("title", desktopMode
+    ? "Drag Pip around your desktop · Toggle Desktop Mode to show controls"
+    : "Click Pip!");
 }
 window.petDesktop?.onDesktopMode(applyDesktopMode);
+window.petDesktop?.onDesktopDirection((direction) => { desktopDirection = direction; });
 
-// In Desktop Mode, drag directly from Pip. In Pet Mode, use the title bar.
 let petDragging = false;
 let suppressPetClick = false;
 pet.addEventListener("mousedown", (event) => {
