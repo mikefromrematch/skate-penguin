@@ -29,32 +29,12 @@ const state = {
   lastFrame: 0
 };
 
-const colors = {
-  navy: "#182945", dark: "#263c5e", white: "#fff8e8",
-  orange: "#f28b38", orangeDark: "#db6c27",
-  blue: "#3576d5", blueDark: "#2559a7", blueLight: "#6ca9ff",
-  cyan: "#42d5e8", cyanDark: "#2389a9",
-  wood: "#9a6239", woodDark: "#70452b", sparkle: "#fff2a8"
-};
-
-function pixel(x, y, w, h, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(Math.round(x), Math.round(y), w, h);
-}
-
-function drawSparkle(x, y, size, color) {
-  pixel(x + size, y, size, size, color);
-  pixel(x, y + size, size * 3, size, color);
-  pixel(x + size, y + size * 2, size, size, color);
-}
-
 const pipSprites = new Image();
 pipSprites.src = "../assets/pip-sprites.png";
 
 function drawPip(now) {
   ctx.clearRect(0, 0, 96, 96);
   if (!pipSprites.complete || !pipSprites.naturalWidth) return;
-  // 12 hand-drawn poses from the approved reference sprite strip.
   const frames = {
     idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7],
     jump: [8], happy: [8], surprised: [9], sad: [10],
@@ -89,7 +69,9 @@ function setPose(pose, duration = 0) {
   state.pose = pose;
   state.poseUntil = duration ? Date.now() + duration : 0;
   const isSkating = pose === "skate" || pose === "trick";
-  window.petDesktop?.setSkating(isSkating || desktopMode);
+  // In regular Pet Mode only Pip's CSS position changes inside the scene.
+  // Only Desktop Mode is allowed to animate the native Electron window.
+  window.petDesktop?.setSkating(desktopMode && isSkating);
   pet.classList.toggle("sleeping", pose === "sleep");
   pet.classList.toggle("skating", isSkating);
   pet.classList.toggle("jumping", pose === "jump");
@@ -124,7 +106,6 @@ function frame(now) {
       state.x = 0;
       state.direction = 1;
     }
-    // Pip occasionally throws in a tiny ollie while cruising.
     if (state.pose === "skate" && currentTime >= state.nextTrick) {
       state.nextTrick = currentTime + 5000;
       setPose("trick", 620);
@@ -233,27 +214,20 @@ setInterval(() => {
 
 update();
 
-
-// Desktop Mode is controlled by the app menu (View > Toggle Desktop Mode)
-// or Command/Ctrl+Shift+D. The browser demo keeps its regular pet layout.
 function applyDesktopMode(enabled) {
   desktopMode = Boolean(enabled);
   document.body.classList.toggle("desktop-mode", desktopMode);
-  window.petDesktop?.setSkating(desktopMode || state.pose === "skate" || state.pose === "trick");
+  window.petDesktop?.setSkating(desktopMode && (state.pose === "skate" || state.pose === "trick"));
   state.x = Math.max(0, scene.clientWidth / 2 - 58);
   pet.style.left = state.x + "px";
-  const dragTarget = enabled ? pet : handle;
-  handle.style.cursor = enabled ? "default" : "grab";
-  pet.style.cursor = enabled ? "grab" : "pointer";
-  if (enabled) {
-    pet.setAttribute("title", "Drag Pip around your desktop · Toggle Desktop Mode to show controls");
-  } else {
-    pet.setAttribute("title", "Click Pip!");
-  }
+  handle.style.cursor = desktopMode ? "default" : "grab";
+  pet.style.cursor = desktopMode ? "grab" : "pointer";
+  pet.setAttribute("title", desktopMode
+    ? "Drag Pip around your desktop · Toggle Desktop Mode to show controls"
+    : "Click Pip!");
 }
 window.petDesktop?.onDesktopMode(applyDesktopMode);
 
-// In Desktop Mode, drag directly from Pip. In Pet Mode, use the title bar.
 let petDragging = false;
 let suppressPetClick = false;
 pet.addEventListener("mousedown", (event) => {
