@@ -51,12 +51,12 @@ function drawPip(now) {
   const sprites = characterSprites[selectedCharacter];
   if (!sprites.complete || !sprites.naturalWidth) return;
   const frames = selectedCharacter === "mechanic"
-    ? { idle: [0, 1, 2, 3], skate: [4, 5, 6, 7], trick: [9, 10], jump: [8, 9], happy: [10], surprised: [8], sad: [11], fall: [8], sleep: [0] }
+    ? { idle: [0, 1, 2, 3], skate: [4, 5], trick: [9, 10], jump: [8, 9], happy: [10], surprised: [8], sad: [11], fall: [8], sleep: [0] }
     : selectedCharacter === "shredasaurus"
       ? { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 8], jump: [7], happy: [9], surprised: [10], sad: [10], fall: [10], sleep: [11] }
       : { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7], jump: [8], happy: [8], surprised: [9], sad: [10], fall: [10], sleep: [11] };
   const sequence = frames[state.pose] || frames.idle;
-  const speed = state.pose === "skate" ? 135
+  const speed = state.pose === "skate" ? (selectedCharacter === "mechanic" ? 320 : 135)
     : state.pose === "trick" ? 165
     : state.pose === "idle" ? 520 : 210;
   const frame = sequence[Math.floor(now / speed) % sequence.length];
@@ -118,7 +118,7 @@ function frame(now) {
 
   if (state.pose === "skate" || state.pose === "trick") {
     const elapsed = state.lastFrame ? Math.min(40, now - state.lastFrame) : 16;
-    state.x += state.direction * elapsed * 0.055;
+    state.x += state.direction * elapsed * (selectedCharacter === "mechanic" ? 0.026 : 0.055);
     if (state.x >= bounds()) {
       state.x = bounds();
       state.direction = -1;
