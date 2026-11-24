@@ -1,7 +1,7 @@
 const canvas = document.getElementById("penguin");
 const ctx = canvas.getContext("2d");
 canvas.width = 96;
-canvas.height = 132;
+canvas.height = 144;
 ctx.imageSmoothingEnabled = false;
 const pet = document.getElementById("pet");
 const speech = document.getElementById("speech");
@@ -43,7 +43,7 @@ const state = {
 const characterSprites = { pip: new Image(), shredasaurus: new Image(), mechanic: new Image() };
 characterSprites.pip.src = "../assets/pip-sprites.png";
 characterSprites.shredasaurus.src = "../assets/shredasaurus-sprites.png";
-characterSprites.mechanic.src = "../assets/mechanic-preview-sprites.svg";
+characterSprites.mechanic.src = "../assets/mechanic-reference-sprites.webp";
 const banana = document.getElementById("banana");
 
 function drawPip(now) {
@@ -62,7 +62,7 @@ function drawPip(now) {
   const frame = sequence[Math.floor(now / speed) % sequence.length];
   ctx.imageSmoothingEnabled = false;
   if (selectedCharacter === "mechanic") {
-    ctx.drawImage(sprites, frame * 128, 0, 128, 176, 0, 0, 96, 132);
+    ctx.drawImage(sprites, frame * 32, 0, 32, 48, 0, 0, 96, 144);
   } else {
     ctx.drawImage(sprites, frame * 32, 0, 32, 32, 0, 0, 96, 96);
   }
@@ -135,7 +135,7 @@ function frame(now) {
 
   if (banana) {
     banana.hidden = selectedCharacter !== "mechanic";
-  canvas.height = selectedCharacter === "mechanic" ? 132 : 96;
+  canvas.height = selectedCharacter === "mechanic" ? 144 : 96;
     if (!banana.hidden) {
       const bananaX = state.x + (state.direction > 0 ? 70 : -8);
       banana.style.left = Math.max(0, Math.min(scene.clientWidth - 25, bananaX)) + "px";
