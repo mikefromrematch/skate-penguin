@@ -51,6 +51,6 @@ body.desktop-mode .stats,
 body.desktop-mode .actions,
 body.desktop-mode footer { display: none !important; }
 body.desktop-mode .scene { width: 150px; height: 150px; background: transparent; overflow: visible; }
-body.desktop-mode .pet-wrap { top: 20px; }
+body.desktop-mode .pet-wrap { top: 20px !important; left: 17px !important; }
 body.desktop-mode .pet-wrap:hover { transform: translateX(0) scale(1.04); }
 body.desktop-mode .shadow { opacity: .28; }
