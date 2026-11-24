@@ -34,7 +34,23 @@ footer { text-align:center;background:#fff8e8;padding:3px 0 8px;font-size:8px;co
 .pet-wrap.sleeping { filter:saturate(.5); }
 @keyframes skate { 0%,100%{translate:-3px 0;rotate:-3deg}50%{translate:3px 0;rotate:3deg} }
 @keyframes jump { 0%,100%{translate:0 0}50%{translate:0 -22px} }
-
 .position-controls { position:absolute; z-index:4; right:9px; top:10px; display:flex; flex-direction:column; gap:4px; }
 .position-controls button { width:22px; height:20px; padding:0; border:1px solid #314b80; border-radius:4px; background:#fff8e8; color:#314b80; font: bold 11px "Courier New"; cursor:pointer; opacity:.9; }
 .position-controls button:hover { background:#fff; opacity:1; }
+
+/* Minimal transparent desktop companion mode. */
+body.desktop-mode, body.desktop-mode .pet-window { background: transparent; }
+body.desktop-mode .pet-window { width: 150px; height: 150px; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
+body.desktop-mode .topbar,
+body.desktop-mode .sun,
+body.desktop-mode .cloud,
+body.desktop-mode .speech,
+body.desktop-mode .position-controls,
+body.desktop-mode .ground,
+body.desktop-mode .stats,
+body.desktop-mode .actions,
+body.desktop-mode footer { display: none !important; }
+body.desktop-mode .scene { width: 150px; height: 150px; background: transparent; overflow: visible; }
+body.desktop-mode .pet-wrap { top: 20px !important; left: 17px !important; }
+body.desktop-mode .pet-wrap:hover { transform: translateX(0) scale(1.04); }
+body.desktop-mode .shadow { opacity: .28; }

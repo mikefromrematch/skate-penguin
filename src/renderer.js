@@ -4,6 +4,7 @@ ctx.imageSmoothingEnabled = false;
 const pet = document.getElementById("pet");
 const speech = document.getElementById("speech");
 const scene = document.querySelector(".scene");
+let desktopMode = false;
 const stats = { hunger: 20, happy: 80, energy: 90 };
 const positionKey = "pip-vertical-position";
 let pipVerticalOffset = Number(localStorage.getItem(positionKey) || 0);
@@ -162,7 +163,7 @@ function setPose(pose, duration = 0) {
   state.pose = pose;
   state.poseUntil = duration ? Date.now() + duration : 0;
   const isSkating = pose === "skate" || pose === "trick";
-  window.petDesktop?.setSkating(isSkating);
+  window.petDesktop?.setSkating(isSkating || desktopMode);
   pet.classList.toggle("sleeping", pose === "sleep");
   pet.classList.toggle("skating", isSkating);
   pet.classList.toggle("jumping", pose === "jump");
@@ -245,6 +246,7 @@ document.getElementById("play").onclick = () => handleAction("play");
 document.getElementById("nap").onclick = () => handleAction("nap");
 
 pet.onclick = () => {
+  if (suppressPetClick) { suppressPetClick = false; return; }
   stats.happy = Math.min(100, stats.happy + 3);
   update();
   say(["Boop!", "What's up?", "Skate or die!", "🐧"][Math.floor(Math.random() * 4)]);
@@ -284,7 +286,10 @@ handle.addEventListener("mousedown", (event) => {
 });
 window.addEventListener("mousemove", (event) => {
   if (!dragging) return;
-  window.petDesktop?.drag(event.screenX - lastX, event.screenY - lastY);
+  const dx = event.screenX - lastX;
+  const dy = event.screenY - lastY;
+  if (petDragging && (dx !== 0 || dy !== 0)) suppressPetClick = true;
+  window.petDesktop?.drag(dx, dy);
   lastX = event.screenX;
   lastY = event.screenY;
 });
@@ -300,3 +305,41 @@ setInterval(() => {
 }, 60000);
 
 update();
+
+
+// Desktop Mode is controlled by the app menu (View > Toggle Desktop Mode)
+// or Command/Ctrl+Shift+D. The browser demo keeps its regular pet layout.
+function applyDesktopMode(enabled) {
+  desktopMode = Boolean(enabled);
+  document.body.classList.toggle("desktop-mode", desktopMode);
+  window.petDesktop?.setSkating(desktopMode || state.pose === "skate" || state.pose === "trick");
+  state.x = Math.max(0, scene.clientWidth / 2 - 58);
+  pet.style.left = state.x + "px";
+  const dragTarget = enabled ? pet : handle;
+  handle.style.cursor = enabled ? "default" : "grab";
+  pet.style.cursor = enabled ? "grab" : "pointer";
+  if (enabled) {
+    pet.setAttribute("title", "Drag Pip around your desktop · Toggle Desktop Mode to show controls");
+  } else {
+    pet.setAttribute("title", "Click Pip!");
+  }
+}
+window.petDesktop?.onDesktopMode(applyDesktopMode);
+
+// In Desktop Mode, drag directly from Pip. In Pet Mode, use the title bar.
+let petDragging = false;
+let suppressPetClick = false;
+pet.addEventListener("mousedown", (event) => {
+  if (!document.body.classList.contains("desktop-mode") || event.button !== 0) return;
+  petDragging = true;
+  suppressPetClick = false;
+  dragging = true;
+  lastX = event.screenX;
+  lastY = event.screenY;
+});
+window.addEventListener("mouseup", () => {
+  if (petDragging) {
+    petDragging = false;
+    dragging = false;
+  }
+});
