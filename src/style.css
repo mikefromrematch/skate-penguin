@@ -70,3 +70,7 @@ body.desktop-mode .shadow { opacity: .28; }
 .banana.banana-grabbed { animation:banana-grab .55s ease-in forwards; }
 @keyframes banana-float { 0%,100%{translate:0 0}50%{translate:0 -5px} }
 @keyframes banana-grab { 0%{scale:1;opacity:1}60%{scale:1.25;opacity:1}100%{scale:.4;opacity:0} }
+
+/* The Mechanic uses a small, occasional hop rather than the full-height double jump. */
+.pet-wrap.mechanic.jumping { animation: mechanic-hop .7s ease-out 1; }
+@keyframes mechanic-hop { 0%,100% { translate:0 0; } 42% { translate:0 -9px; } }
