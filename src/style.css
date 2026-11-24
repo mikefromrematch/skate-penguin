@@ -58,3 +58,7 @@ body.desktop-mode .scene { width: 150px; height: 150px; background: transparent;
 body.desktop-mode .pet-wrap { top: 20px !important; left: 17px !important; }
 body.desktop-mode .pet-wrap:hover { transform: translateX(0) scale(1.04); }
 body.desktop-mode .shadow { opacity: .28; }
+
+/* Companion selector */
+.switch-character { margin-left:auto; border:1px solid #8ba5d7; border-radius:5px; background:#263e70; color:#fff; padding:4px 6px; font:bold 8px "Courier New"; cursor:pointer; white-space:nowrap; }
+.switch-character:hover { background:#4265a6; }

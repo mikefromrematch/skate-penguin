@@ -6,7 +6,15 @@ const speech = document.getElementById("speech");
 const scene = document.querySelector(".scene");
 let desktopMode = false;
 let desktopDirection = 1;
-const stats = { hunger: 20, happy: 80, energy: 90 };
+const defaultStats = { hunger: 20, happy: 80, energy: 90 };
+const characterNames = { pip: "Pip", shredasaurus: "Shredasaurus" };
+let selectedCharacter = localStorage.getItem("selected-pet") === "shredasaurus" ? "shredasaurus" : "pip";
+function loadStats() {
+  const key = "pet-save-" + selectedCharacter;
+  const saved = JSON.parse(localStorage.getItem(key) || (selectedCharacter === "pip" ? localStorage.getItem("pip-save") : "null") || "null");
+  return { ...defaultStats, ...(saved || {}) };
+}
+let stats = loadStats();
 const positionKey = "pip-vertical-position";
 let pipVerticalOffset = Number(localStorage.getItem(positionKey) || 0);
 pipVerticalOffset = Math.max(-24, Math.min(24, pipVerticalOffset));
@@ -16,8 +24,6 @@ function adjustPipPosition(amount) {
   localStorage.setItem(positionKey, String(pipVerticalOffset));
   applyPipPosition();
 }
-const saved = JSON.parse(localStorage.getItem("pip-save") || "null");
-if (saved) Object.assign(stats, saved);
 
 const state = {
   pose: "idle",
@@ -30,24 +36,24 @@ const state = {
   lastFrame: 0
 };
 
-const pipSprites = new Image();
-pipSprites.src = "../assets/pip-sprites.png";
+const characterSprites = { pip: new Image(), shredasaurus: new Image() };
+characterSprites.pip.src = "../assets/pip-sprites.png";
+characterSprites.shredasaurus.src = "../assets/shredasaurus-sprites.png";
 
 function drawPip(now) {
   ctx.clearRect(0, 0, 96, 96);
-  if (!pipSprites.complete || !pipSprites.naturalWidth) return;
-  const frames = {
-    idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7],
-    jump: [8], happy: [8], surprised: [9], sad: [10],
-    fall: [10], sleep: [11]
-  };
+  const sprites = characterSprites[selectedCharacter];
+  if (!sprites.complete || !sprites.naturalWidth) return;
+  const frames = selectedCharacter === "shredasaurus"
+    ? { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 8], jump: [7], happy: [9], surprised: [10], sad: [10], fall: [10], sleep: [11] }
+    : { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7], jump: [8], happy: [8], surprised: [9], sad: [10], fall: [10], sleep: [11] };
   const sequence = frames[state.pose] || frames.idle;
   const speed = state.pose === "skate" ? 135
     : state.pose === "trick" ? 165
     : state.pose === "idle" ? 520 : 210;
   const frame = sequence[Math.floor(now / speed) % sequence.length];
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(pipSprites, frame * 32, 0, 32, 32, 0, 0, 96, 96);
+  ctx.drawImage(sprites, frame * 32, 0, 32, 32, 0, 0, 96, 96);
 }
 
 function say(text) {
@@ -63,7 +69,8 @@ function update() {
     document.getElementById(key).style.width = stats[key] + "%";
     document.getElementById(key + "-label").textContent = Math.round(stats[key]) + "%";
   }
-  localStorage.setItem("pip-save", JSON.stringify(stats));
+  localStorage.setItem("pet-save-" + selectedCharacter, JSON.stringify(stats));
+  if (selectedCharacter === "pip") localStorage.setItem("pip-save", JSON.stringify(stats));
 }
 
 function setPose(pose, duration = 0) {
@@ -130,24 +137,47 @@ function handleAction(action) {
     stats.hunger = Math.max(0, stats.hunger - 35);
     stats.happy = Math.min(100, stats.happy + 8);
     update();
-    say("Yum! Fish!! 🐟");
+    say(selectedCharacter === "shredasaurus" ? "Dino-sized snack!! 🐟" : "Yum! Fish!! 🐟");
     animate("jump", 900);
   }
   if (action === "play") {
     stats.happy = Math.min(100, stats.happy + 18);
     stats.energy = Math.max(0, stats.energy - 12);
     update();
-    say("Check this out! 🛹");
+    say(selectedCharacter === "shredasaurus" ? "Witness the SHRED!! 🛹" : "Check this out! 🛹");
     animate("trick", 1300);
   }
   if (action === "nap") {
     stats.energy = Math.min(100, stats.energy + 30);
     stats.hunger = Math.min(100, stats.hunger + 5);
     update();
-    say("Zzz... sweet dreams");
+    say(selectedCharacter === "shredasaurus" ? "Even legends need a nap..." : "Zzz... sweet dreams");
     animate("sleep", 2600);
   }
 }
+
+
+const switchCharacterButton = document.getElementById("switch-character");
+function refreshCharacterLabel() {
+  const name = characterNames[selectedCharacter];
+  document.getElementById("brand-name").textContent = name.toUpperCase();
+  switchCharacterButton.textContent = "Switch Pet ↻";
+  switchCharacterButton.title = selectedCharacter === "pip" ? "Switch to Shredasaurus" : "Switch to Pip";
+  pet.setAttribute("title", "Click " + name + "!");
+}
+switchCharacterButton.onclick = () => {
+  selectedCharacter = selectedCharacter === "pip" ? "shredasaurus" : "pip";
+  localStorage.setItem("selected-pet", selectedCharacter);
+  stats = loadStats();
+  state.direction = 1;
+  state.x = Math.max(0, scene.clientWidth / 2 - 58);
+  pet.style.left = state.x + "px";
+  setPose("idle");
+  refreshCharacterLabel();
+  update();
+  say(selectedCharacter === "shredasaurus" ? "Shredasaurus is ready to shred! 😎" : "Pip is back on the board! 🐧");
+};
+refreshCharacterLabel();
 
 document.getElementById("feed").onclick = () => handleAction("feed");
 document.getElementById("play").onclick = () => handleAction("play");
@@ -157,7 +187,8 @@ pet.onclick = () => {
   if (suppressPetClick) { suppressPetClick = false; return; }
   stats.happy = Math.min(100, stats.happy + 3);
   update();
-  say(["Boop!", "What's up?", "Skate or die!", "🐧"][Math.floor(Math.random() * 4)]);
+  const greetings = selectedCharacter === "shredasaurus" ? ["Too cool. 😎", "ROAR means hello!", "Watch this trick!", "Tiny arms, BIG style."] : ["Boop!", "What's up?", "Skate or die!", "🐧"];
+  say(greetings[Math.floor(Math.random() * greetings.length)]);
   animate("jump", 650);
 };
 pet.onkeydown = (event) => {
@@ -170,7 +201,7 @@ pet.onkeydown = (event) => {
 const desktopOnly = Boolean(window.petDesktop);
 if (!desktopOnly) {
   document.getElementById("close").hidden = true;
-  document.querySelector("footer").textContent = "Click Pip to interact · Your progress saves in this browser";
+  document.querySelector("footer").textContent = "Click your pet to interact · Progress saves automatically";
 }
 document.getElementById("close").onclick = () => window.petDesktop?.close();
 document.getElementById("minimize").onclick = () => window.petDesktop?.minimize();
@@ -224,8 +255,8 @@ function applyDesktopMode(enabled) {
   handle.style.cursor = desktopMode ? "default" : "grab";
   pet.style.cursor = desktopMode ? "grab" : "pointer";
   pet.setAttribute("title", desktopMode
-    ? "Drag Pip around your desktop · Toggle Desktop Mode to show controls"
-    : "Click Pip!");
+    ? "Drag " + characterNames[selectedCharacter] + " around your desktop · Toggle Desktop Mode to show controls"
+    : "Click " + characterNames[selectedCharacter] + "!");
 }
 window.petDesktop?.onDesktopMode(applyDesktopMode);
 window.petDesktop?.onDesktopDirection((direction) => { desktopDirection = direction; });
