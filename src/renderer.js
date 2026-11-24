@@ -41,7 +41,7 @@ const state = {
 const characterSprites = { pip: new Image(), shredasaurus: new Image(), mechanic: new Image() };
 characterSprites.pip.src = "../assets/pip-sprites.png";
 characterSprites.shredasaurus.src = "../assets/shredasaurus-sprites.png";
-characterSprites.mechanic.src = "../assets/mechanic-sprites.png";
+characterSprites.mechanic.src = "../assets/mechanic-sprites.svg";
 const banana = document.getElementById("banana");
 
 function drawPip(now) {
