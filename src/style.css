@@ -74,3 +74,6 @@ body.desktop-mode .shadow { opacity: .28; }
 /* The Mechanic uses a small, occasional hop rather than the full-height double jump. */
 .pet-wrap.mechanic.jumping { animation: mechanic-hop .7s ease-out 1; }
 @keyframes mechanic-hop { 0%,100% { translate:0 0; } 42% { translate:0 -9px; } }
+
+/* The Mechanic glides smoothly: no rocking or vertical skate bob. */
+.pet-wrap.mechanic.skating { animation: none !important; }
