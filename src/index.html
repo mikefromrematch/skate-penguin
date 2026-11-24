@@ -9,13 +9,14 @@
 <body>
   <main class="pet-window">
     <header class="topbar" id="drag-handle">
-      <span class="brand">PIP <span>•</span> SKATE CLUB</span>
+      <span class="brand"><span id="brand-name">PIP</span> <span>•</span> SKATE CLUB</span>
+      <button class="switch-character" id="switch-character" type="button">Switch to Shredasaurus ↻</button>
       <div class="window-actions"><button class="minimize" id="minimize" title="Minimize">−</button><button class="close" id="close" title="Quit">×</button></div>
     </header>
     <section class="scene">
       <div class="cloud cloud-a"></div><div class="cloud cloud-b"></div>
       <div class="sun"></div>
-      <div class="pet-wrap" id="pet" role="button" tabindex="0" title="Click Pip!">
+      <div class="pet-wrap" id="pet" role="button" tabindex="0" title="Click your companion!">
         <canvas id="penguin" width="96" height="96"></canvas>
         <div class="shadow"></div>
       </div>
