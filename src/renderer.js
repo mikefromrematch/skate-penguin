@@ -286,7 +286,10 @@ handle.addEventListener("mousedown", (event) => {
 });
 window.addEventListener("mousemove", (event) => {
   if (!dragging) return;
-  window.petDesktop?.drag(event.screenX - lastX, event.screenY - lastY);
+  const dx = event.screenX - lastX;
+  const dy = event.screenY - lastY;
+  if (petDragging && (dx !== 0 || dy !== 0)) suppressPetClick = true;
+  window.petDesktop?.drag(dx, dy);
   lastX = event.screenX;
   lastY = event.screenY;
 });
@@ -310,6 +313,8 @@ function applyDesktopMode(enabled) {
   desktopMode = Boolean(enabled);
   document.body.classList.toggle("desktop-mode", desktopMode);
   window.petDesktop?.setSkating(desktopMode || state.pose === "skate" || state.pose === "trick");
+  state.x = Math.max(0, scene.clientWidth / 2 - 58);
+  pet.style.left = state.x + "px";
   const dragTarget = enabled ? pet : handle;
   handle.style.cursor = enabled ? "default" : "grab";
   pet.style.cursor = enabled ? "grab" : "pointer";
