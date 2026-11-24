@@ -17,7 +17,7 @@ body { margin: 0; background: transparent; overflow: hidden; user-select: none; 
 .cloud:before { width:12px;height:12px;left:5px;top:-5px; }
 .cloud:after { width:14px;height:14px;right:4px;top:-7px; }
 .cloud-a { top:34px;left:22px; }.cloud-b { top:61px;right:52px;transform:scale(.7); }
-.pet-wrap { position:absolute; width:116px;height:140px; left:50%; top:45px; transform:translateX(-50%); z-index:2; cursor:pointer; transition:transform .15s; }
+.pet-wrap { position:absolute; width:116px;height:160px; left:50%; top:12px; transform:translateX(-50%); z-index:2; cursor:pointer; transition:transform .15s; }
 .pet-wrap:hover { transform:translateX(-50%) scale(1.05); }
 canvas { width:96px;height:132px;image-rendering:pixelated;position:absolute;left:10px;top:5px; }
 .shadow { position:absolute;bottom:7px;left:26px;width:64px;height:8px;background:#8acbd5;opacity:.55; border-radius:50%; }
