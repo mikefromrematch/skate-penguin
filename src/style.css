@@ -62,3 +62,11 @@ body.desktop-mode .shadow { opacity: .28; }
 /* Companion selector */
 .switch-character { margin-left:auto; border:1px solid #8ba5d7; border-radius:5px; background:#263e70; color:#fff; padding:4px 6px; font:bold 8px "Courier New"; cursor:pointer; white-space:nowrap; }
 .switch-character:hover { background:#4265a6; }
+
+
+/* The Mechanic's banana chase */
+.banana { position:absolute; top:25px; left:70%; z-index:1; font-size:23px; line-height:1; filter:drop-shadow(1px 2px 0 #8a6a28); transition:left .12s linear, top .18s ease; animation:banana-float 1.1s ease-in-out infinite; pointer-events:none; }
+.banana[hidden] { display:none; }
+.banana.banana-grabbed { animation:banana-grab .55s ease-in forwards; }
+@keyframes banana-float { 0%,100%{translate:0 0}50%{translate:0 -5px} }
+@keyframes banana-grab { 0%{scale:1;opacity:1}60%{scale:1.25;opacity:1}100%{scale:.4;opacity:0} }

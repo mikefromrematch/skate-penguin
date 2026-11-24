@@ -7,8 +7,10 @@ const scene = document.querySelector(".scene");
 let desktopMode = false;
 let desktopDirection = 1;
 const defaultStats = { hunger: 20, happy: 80, energy: 90 };
-const characterNames = { pip: "Pip", shredasaurus: "Shredasaurus" };
-let selectedCharacter = localStorage.getItem("selected-pet") === "shredasaurus" ? "shredasaurus" : "pip";
+const characterNames = { pip: "Pip", shredasaurus: "Shredasaurus", mechanic: "The Mechanic" };
+const characterOrder = ["pip", "shredasaurus", "mechanic"];
+const savedCharacter = localStorage.getItem("selected-pet");
+let selectedCharacter = characterOrder.includes(savedCharacter) ? savedCharacter : "pip";
 function loadStats() {
   const key = "pet-save-" + selectedCharacter;
   const saved = JSON.parse(localStorage.getItem(key) || (selectedCharacter === "pip" ? localStorage.getItem("pip-save") : "null") || "null");
@@ -36,17 +38,21 @@ const state = {
   lastFrame: 0
 };
 
-const characterSprites = { pip: new Image(), shredasaurus: new Image() };
+const characterSprites = { pip: new Image(), shredasaurus: new Image(), mechanic: new Image() };
 characterSprites.pip.src = "../assets/pip-sprites.png";
 characterSprites.shredasaurus.src = "../assets/shredasaurus-sprites.png";
+characterSprites.mechanic.src = "../assets/mechanic-sprites.svg";
+const banana = document.getElementById("banana");
 
 function drawPip(now) {
   ctx.clearRect(0, 0, 96, 96);
   const sprites = characterSprites[selectedCharacter];
   if (!sprites.complete || !sprites.naturalWidth) return;
-  const frames = selectedCharacter === "shredasaurus"
-    ? { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 8], jump: [7], happy: [9], surprised: [10], sad: [10], fall: [10], sleep: [11] }
-    : { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7], jump: [8], happy: [8], surprised: [9], sad: [10], fall: [10], sleep: [11] };
+  const frames = selectedCharacter === "mechanic"
+    ? { idle: [0, 1, 2, 3], skate: [4, 5, 6, 7], trick: [9, 10], jump: [8, 9, 10], happy: [10], surprised: [8], sad: [11], fall: [8], sleep: [0] }
+    : selectedCharacter === "shredasaurus"
+      ? { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 8], jump: [7], happy: [9], surprised: [10], sad: [10], fall: [10], sleep: [11] }
+      : { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7], jump: [8], happy: [8], surprised: [9], sad: [10], fall: [10], sleep: [11] };
   const sequence = frames[state.pose] || frames.idle;
   const speed = state.pose === "skate" ? 135
     : state.pose === "trick" ? 165
@@ -95,7 +101,8 @@ function bounds() {
 
 function frame(now) {
   const currentTime = Date.now();
-  if (state.poseUntil && currentTime > state.poseUntil) setPose("idle");
+  if (state.poseUntil && currentTime > state.poseUntil) setPose(selectedCharacter === "mechanic" ? "skate" : "idle");
+  if (selectedCharacter === "mechanic" && state.pose === "idle") setPose("skate");
 
   if (state.pose === "idle" && currentTime - state.lastSkate > 10500 && stats.energy > 15) {
     state.lastSkate = currentTime;
@@ -120,6 +127,13 @@ function frame(now) {
     }
   }
 
+  if (banana) {
+    banana.hidden = selectedCharacter !== "mechanic";
+    if (!banana.hidden) {
+      const bananaX = state.x + (state.direction > 0 ? 70 : -8);
+      banana.style.left = Math.max(0, Math.min(scene.clientWidth - 25, bananaX)) + "px";
+    }
+  }
   state.lastFrame = now;
   pet.style.left = state.x + "px";
   pet.style.transform = "translateX(0) scaleX(" + (desktopMode ? desktopDirection : state.direction) + ")";
@@ -162,20 +176,22 @@ function refreshCharacterLabel() {
   const name = characterNames[selectedCharacter];
   document.getElementById("brand-name").textContent = name.toUpperCase();
   switchCharacterButton.textContent = "Switch Pet ↻";
-  switchCharacterButton.title = selectedCharacter === "pip" ? "Switch to Shredasaurus" : "Switch to Pip";
-  pet.setAttribute("title", "Click " + name + "!");
+  const nextCharacter = characterOrder[(characterOrder.indexOf(selectedCharacter) + 1) % characterOrder.length];
+  switchCharacterButton.title = "Switch to " + characterNames[nextCharacter];
+  banana.hidden = selectedCharacter !== "mechanic";
+  pet.setAttribute("title", selectedCharacter === "mechanic" ? "Click to jump for the banana!" : "Click " + name + "!");
 }
 switchCharacterButton.onclick = () => {
-  selectedCharacter = selectedCharacter === "pip" ? "shredasaurus" : "pip";
+  selectedCharacter = characterOrder[(characterOrder.indexOf(selectedCharacter) + 1) % characterOrder.length];
   localStorage.setItem("selected-pet", selectedCharacter);
   stats = loadStats();
   state.direction = 1;
   state.x = Math.max(0, scene.clientWidth / 2 - 58);
   pet.style.left = state.x + "px";
-  setPose("idle");
+  setPose(selectedCharacter === "mechanic" ? "skate" : "idle");
   refreshCharacterLabel();
   update();
-  say(selectedCharacter === "shredasaurus" ? "Shredasaurus is ready to shred! 😎" : "Pip is back on the board! 🐧");
+  say(selectedCharacter === "shredasaurus" ? "Shredasaurus is ready to shred! 😎" : selectedCharacter === "mechanic" ? "The Mechanic is chasing that banana! 🍌" : "Pip is back on the board! 🐧");
 };
 refreshCharacterLabel();
 
@@ -187,9 +203,18 @@ pet.onclick = () => {
   if (suppressPetClick) { suppressPetClick = false; return; }
   stats.happy = Math.min(100, stats.happy + 3);
   update();
-  const greetings = selectedCharacter === "shredasaurus" ? ["Too cool. 😎", "ROAR means hello!", "Watch this trick!", "Tiny arms, BIG style."] : ["Boop!", "What's up?", "Skate or die!", "🐧"];
-  say(greetings[Math.floor(Math.random() * greetings.length)]);
-  animate("jump", 650);
+  if (selectedCharacter === "mechanic") {
+    say("BANANA TIME! 🍌");
+    banana.classList.remove("banana-grabbed");
+    void banana.offsetWidth;
+    banana.classList.add("banana-grabbed");
+    setTimeout(() => banana.classList.remove("banana-grabbed"), 650);
+    animate("jump", 1050);
+  } else {
+    const greetings = selectedCharacter === "shredasaurus" ? ["Too cool. 😎", "ROAR means hello!", "Watch this trick!", "Tiny arms, BIG style."] : ["Boop!", "What's up?", "Skate or die!", "🐧"];
+    say(greetings[Math.floor(Math.random() * greetings.length)]);
+    animate("jump", 650);
+  }
 };
 pet.onkeydown = (event) => {
   if (event.key === "Enter" || event.key === " ") {
@@ -256,7 +281,7 @@ function applyDesktopMode(enabled) {
   pet.style.cursor = desktopMode ? "grab" : "pointer";
   pet.setAttribute("title", desktopMode
     ? "Drag " + characterNames[selectedCharacter] + " around your desktop · Toggle Desktop Mode to show controls"
-    : "Click " + characterNames[selectedCharacter] + "!");
+    : selectedCharacter === "mechanic" ? "Click to jump for the banana!" : "Click " + characterNames[selectedCharacter] + "!");
 }
 window.petDesktop?.onDesktopMode(applyDesktopMode);
 window.petDesktop?.onDesktopDirection((direction) => { desktopDirection = direction; });
