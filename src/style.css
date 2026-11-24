@@ -17,9 +17,9 @@ body { margin: 0; background: transparent; overflow: hidden; user-select: none; 
 .cloud:before { width:12px;height:12px;left:5px;top:-5px; }
 .cloud:after { width:14px;height:14px;right:4px;top:-7px; }
 .cloud-a { top:34px;left:22px; }.cloud-b { top:61px;right:52px;transform:scale(.7); }
-.pet-wrap { position:absolute; width:116px;height:105px; left:50%; top:90px; transform:translateX(-50%); z-index:2; cursor:pointer; transition:transform .15s; }
+.pet-wrap { position:absolute; width:116px;height:140px; left:50%; top:45px; transform:translateX(-50%); z-index:2; cursor:pointer; transition:transform .15s; }
 .pet-wrap:hover { transform:translateX(-50%) scale(1.05); }
-canvas { width:96px;height:96px;image-rendering:pixelated;position:absolute;left:10px;top:5px; }
+canvas { width:96px;height:132px;image-rendering:pixelated;position:absolute;left:10px;top:5px; }
 .shadow { position:absolute;bottom:7px;left:26px;width:64px;height:8px;background:#8acbd5;opacity:.55; border-radius:50%; }
 .ground { position:absolute;bottom:0;left:0;right:0;height:4px;background:#6eb5a6; }
 .speech { position:absolute;top:12px;left:12px;background:#fff;border:2px solid #314b80;border-radius:7px;padding:5px 6px;font-size:9px;z-index:3;max-width:100px; }
@@ -55,7 +55,7 @@ body.desktop-mode .stats,
 body.desktop-mode .actions,
 body.desktop-mode footer { display: none !important; }
 body.desktop-mode .scene { width: 150px; height: 150px; background: transparent; overflow: visible; }
-body.desktop-mode .pet-wrap { top: 20px !important; left: 17px !important; }
+body.desktop-mode .pet-wrap { top: 8px !important; left: 17px !important; }
 body.desktop-mode .pet-wrap:hover { transform: translateX(0) scale(1.04); }
 body.desktop-mode .shadow { opacity: .28; }
 
