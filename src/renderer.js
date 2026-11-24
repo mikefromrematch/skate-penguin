@@ -1,5 +1,7 @@
 const canvas = document.getElementById("penguin");
 const ctx = canvas.getContext("2d");
+canvas.width = 96;
+canvas.height = 132;
 ctx.imageSmoothingEnabled = false;
 const pet = document.getElementById("pet");
 const speech = document.getElementById("speech");
@@ -41,11 +43,11 @@ const state = {
 const characterSprites = { pip: new Image(), shredasaurus: new Image(), mechanic: new Image() };
 characterSprites.pip.src = "../assets/pip-sprites.png";
 characterSprites.shredasaurus.src = "../assets/shredasaurus-sprites.png";
-characterSprites.mechanic.src = "../assets/mechanic-sprites.svg";
+characterSprites.mechanic.src = "../assets/mechanic-preview-sprites.svg";
 const banana = document.getElementById("banana");
 
 function drawPip(now) {
-  ctx.clearRect(0, 0, 96, 96);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   const sprites = characterSprites[selectedCharacter];
   if (!sprites.complete || !sprites.naturalWidth) return;
   const frames = selectedCharacter === "mechanic"
@@ -59,7 +61,11 @@ function drawPip(now) {
     : state.pose === "idle" ? 520 : 210;
   const frame = sequence[Math.floor(now / speed) % sequence.length];
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(sprites, frame * 32, 0, 32, 32, 0, 0, 96, 96);
+  if (selectedCharacter === "mechanic") {
+    ctx.drawImage(sprites, frame * 128, 0, 128, 176, 0, 0, 96, 132);
+  } else {
+    ctx.drawImage(sprites, frame * 32, 0, 32, 32, 0, 0, 96, 96);
+  }
 }
 
 function say(text) {
@@ -129,6 +135,7 @@ function frame(now) {
 
   if (banana) {
     banana.hidden = selectedCharacter !== "mechanic";
+  canvas.height = selectedCharacter === "mechanic" ? 132 : 96;
     if (!banana.hidden) {
       const bananaX = state.x + (state.direction > 0 ? 70 : -8);
       banana.style.left = Math.max(0, Math.min(scene.clientWidth - 25, bananaX)) + "px";
