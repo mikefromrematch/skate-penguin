@@ -5,6 +5,15 @@ const pet = document.getElementById("pet");
 const speech = document.getElementById("speech");
 const scene = document.querySelector(".scene");
 const stats = { hunger: 20, happy: 80, energy: 90 };
+const positionKey = "pip-vertical-position";
+let pipVerticalOffset = Number(localStorage.getItem(positionKey) || 0);
+pipVerticalOffset = Math.max(-24, Math.min(24, pipVerticalOffset));
+function applyPipPosition() { pet.style.top = (90 + pipVerticalOffset) + "px"; }
+function adjustPipPosition(amount) {
+  pipVerticalOffset = Math.max(-24, Math.min(24, pipVerticalOffset + amount));
+  localStorage.setItem(positionKey, String(pipVerticalOffset));
+  applyPipPosition();
+}
 const saved = JSON.parse(localStorage.getItem("pip-save") || "null");
 if (saved) Object.assign(stats, saved);
 
@@ -254,6 +263,14 @@ if (!desktopOnly) {
   document.querySelector("footer").textContent = "Click Pip to interact · Your progress saves in this browser";
 }
 document.getElementById("close").onclick = () => window.petDesktop?.close();
+document.getElementById("raise-pip").onclick = () => adjustPipPosition(-2);
+document.getElementById("lower-pip").onclick = () => adjustPipPosition(2);
+document.getElementById("reset-pip").onclick = () => {
+  pipVerticalOffset = 0;
+  localStorage.setItem(positionKey, "0");
+  applyPipPosition();
+};
+applyPipPosition();
 
 let dragging = false;
 let lastX = 0;
