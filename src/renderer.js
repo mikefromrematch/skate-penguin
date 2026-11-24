@@ -236,6 +236,7 @@ pet.addEventListener("mousedown", (event) => {
   if (!document.body.classList.contains("desktop-mode") || event.button !== 0) return;
   petDragging = true;
   suppressPetClick = false;
+  window.petDesktop?.beginDrag();
   dragging = true;
   lastX = event.screenX;
   lastY = event.screenY;
@@ -244,5 +245,6 @@ window.addEventListener("mouseup", () => {
   if (petDragging) {
     petDragging = false;
     dragging = false;
+    window.petDesktop?.endDrag();
   }
 });

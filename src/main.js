@@ -48,6 +48,8 @@ function createWindow() {
 }
 app.whenReady().then(()=>{createApplicationMenu();createWindow();});
 app.on("window-all-closed",()=>app.quit()); app.on("activate",showPetWindow);
-ipcMain.on("pet:drag",(_event,{dx,dy})=>{if(!win||desktopMode)return;const [x,y]=win.getPosition();win.setPosition(x+dx,y+dy);});
+ipcMain.on("pet:drag-start",()=>{if(desktopMode)stopDesktopSkating();});
+ipcMain.on("pet:drag",(_event,{dx,dy})=>{if(!win)return;const [x,y]=win.getPosition();win.setPosition(x+dx,y+dy);});
+ipcMain.on("pet:drag-end",()=>{if(desktopMode)startDesktopSkating();});
 ipcMain.on("pet:skating",(_event,active)=>{if(desktopMode&&active)startDesktopSkating();});
 ipcMain.on("pet:minimize",()=>win?.minimize()); ipcMain.on("pet:close",()=>app.quit());
