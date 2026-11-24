@@ -161,7 +161,8 @@ const switchCharacterButton = document.getElementById("switch-character");
 function refreshCharacterLabel() {
   const name = characterNames[selectedCharacter];
   document.getElementById("brand-name").textContent = name.toUpperCase();
-  switchCharacterButton.textContent = selectedCharacter === "pip" ? "Switch to Shredasaurus ↻" : "Switch to Pip ↻";
+  switchCharacterButton.textContent = "Switch Pet ↻";
+  switchCharacterButton.title = selectedCharacter === "pip" ? "Switch to Shredasaurus" : "Switch to Pip";
   pet.setAttribute("title", "Click " + name + "!");
 }
 switchCharacterButton.onclick = () => {
