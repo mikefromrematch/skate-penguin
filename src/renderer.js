@@ -127,9 +127,9 @@ function frame(now) {
       state.x = 0;
       state.direction = 1;
     }
-    if (state.pose === "skate" && currentTime >= state.nextTrick) {
-      state.nextTrick = currentTime + (selectedCharacter === "mechanic" ? 14000 : 5000);
-      setPose("trick", selectedCharacter === "mechanic" ? 420 : 620);
+    if (selectedCharacter !== "mechanic" && state.pose === "skate" && currentTime >= state.nextTrick) {
+      state.nextTrick = currentTime + 5000;
+      setPose("trick", 620);
     }
   }
 
@@ -159,14 +159,14 @@ function handleAction(action) {
     stats.happy = Math.min(100, stats.happy + 8);
     update();
     say(selectedCharacter === "shredasaurus" ? "Dino-sized snack!! 🐟" : "Yum! Fish!! 🐟");
-    animate("jump", 900);
+    if (selectedCharacter !== "mechanic") animate("jump", 900);
   }
   if (action === "play") {
     stats.happy = Math.min(100, stats.happy + 18);
     stats.energy = Math.max(0, stats.energy - 12);
     update();
     say(selectedCharacter === "shredasaurus" ? "Witness the SHRED!! 🛹" : "Check this out! 🛹");
-    animate("trick", 1300);
+    if (selectedCharacter !== "mechanic") animate("trick", 1300);
   }
   if (action === "nap") {
     stats.energy = Math.min(100, stats.energy + 30);
