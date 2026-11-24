@@ -1,9 +1,10 @@
-const { app, BrowserWindow, ipcMain, screen } = require("electron");
+const { app, BrowserWindow, ipcMain, screen, Menu } = require("electron");
 const path = require("node:path");
 
 let win;
 let skateTimer = null;
 let desktopDirection = 1;
+let desktopMode = false;
 
 function stopDesktopSkating() {
   if (skateTimer) clearInterval(skateTimer);
@@ -13,25 +14,53 @@ function stopDesktopSkating() {
 function startDesktopSkating() {
   if (skateTimer || !win) return;
   desktopDirection = 1;
-  // Move the whole companion gently across the desktop while Pip skates.
   skateTimer = setInterval(() => {
     if (!win || win.isDestroyed()) return stopDesktopSkating();
     const [x, y] = win.getPosition();
     const [width] = win.getSize();
-    const display = screen.getDisplayMatching(win.getBounds());
-    const area = display.workArea;
+    const area = screen.getDisplayMatching(win.getBounds()).workArea;
     const minX = area.x;
     const maxX = Math.max(minX, area.x + area.width - width);
     let nextX = x + desktopDirection * 2;
-    if (nextX >= maxX) {
-      nextX = maxX;
-      desktopDirection = -1;
-    } else if (nextX <= minX) {
-      nextX = minX;
-      desktopDirection = 1;
-    }
+    if (nextX >= maxX) { nextX = maxX; desktopDirection = -1; }
+    else if (nextX <= minX) { nextX = minX; desktopDirection = 1; }
     win.setPosition(Math.round(nextX), y, false);
   }, 30);
+}
+
+function setDesktopMode(enabled) {
+  desktopMode = Boolean(enabled);
+  if (!win || win.isDestroyed()) return;
+  if (desktopMode) {
+    win.setMinimumSize(150, 150);
+    win.setResizable(false);
+    win.setSize(150, 150);
+  } else {
+    win.setResizable(true);
+    win.setMinimumSize(260, 320);
+    win.setSize(300, 370);
+  }
+  win.webContents.send("pet:desktop-mode", desktopMode);
+}
+
+function createApplicationMenu() {
+  const template = [
+    ...(process.platform === "darwin" ? [{
+      label: app.name,
+      submenu: [{ role: "about" }, { type: "separator" }, { role: "quit" }]
+    }] : []),
+    {
+      label: "View",
+      submenu: [
+        {
+          label: "Toggle Desktop Mode",
+          accelerator: "CommandOrControl+Shift+D",
+          click: () => setDesktopMode(!desktopMode)
+        }
+      ]
+    }
+  ];
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
 function createWindow() {
@@ -42,6 +71,7 @@ function createWindow() {
     minHeight: 320,
     frame: false,
     transparent: true,
+    backgroundColor: "#00000000",
     alwaysOnTop: true,
     resizable: true,
     hasShadow: false,
@@ -61,7 +91,10 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createApplicationMenu();
+  createWindow();
+});
 app.on("window-all-closed", () => app.quit());
 app.on("activate", () => { if (!win) createWindow(); });
 
