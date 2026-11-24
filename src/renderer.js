@@ -51,7 +51,7 @@ function drawPip(now) {
   const sprites = characterSprites[selectedCharacter];
   if (!sprites.complete || !sprites.naturalWidth) return;
   const frames = selectedCharacter === "mechanic"
-    ? { idle: [0, 1, 2, 3], skate: [4, 5, 6, 7], trick: [9, 10], jump: [8, 9, 10], happy: [10], surprised: [8], sad: [11], fall: [8], sleep: [0] }
+    ? { idle: [0, 1, 2, 3], skate: [4, 5, 6, 7], trick: [9, 10], jump: [8, 9], happy: [10], surprised: [8], sad: [11], fall: [8], sleep: [0] }
     : selectedCharacter === "shredasaurus"
       ? { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 8], jump: [7], happy: [9], surprised: [10], sad: [10], fall: [10], sleep: [11] }
       : { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7], jump: [8], happy: [8], surprised: [9], sad: [10], fall: [10], sleep: [11] };
@@ -128,8 +128,8 @@ function frame(now) {
       state.direction = 1;
     }
     if (state.pose === "skate" && currentTime >= state.nextTrick) {
-      state.nextTrick = currentTime + 5000;
-      setPose("trick", 620);
+      state.nextTrick = currentTime + (selectedCharacter === "mechanic" ? 14000 : 5000);
+      setPose("trick", selectedCharacter === "mechanic" ? 420 : 620);
     }
   }
 
@@ -181,6 +181,7 @@ function handleAction(action) {
 const switchCharacterButton = document.getElementById("switch-character");
 function refreshCharacterLabel() {
   const name = characterNames[selectedCharacter];
+  pet.classList.toggle("mechanic", selectedCharacter === "mechanic");
   document.getElementById("brand-name").textContent = name.toUpperCase();
   switchCharacterButton.textContent = "Switch Pet ↻";
   const nextCharacter = characterOrder[(characterOrder.indexOf(selectedCharacter) + 1) % characterOrder.length];
@@ -216,7 +217,7 @@ pet.onclick = () => {
     void banana.offsetWidth;
     banana.classList.add("banana-grabbed");
     setTimeout(() => banana.classList.remove("banana-grabbed"), 650);
-    animate("jump", 1050);
+    animate("jump", 720);
   } else {
     const greetings = selectedCharacter === "shredasaurus" ? ["Too cool. 😎", "ROAR means hello!", "Watch this trick!", "Tiny arms, BIG style."] : ["Boop!", "What's up?", "Skate or die!", "🐧"];
     say(greetings[Math.floor(Math.random() * greetings.length)]);
