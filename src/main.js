@@ -12,10 +12,11 @@ function stopDesktopSkating() {
 }
 
 function startDesktopSkating() {
-  if (skateTimer || !win) return;
+  // The native window is only allowed to move in the small Desktop Pet mode.
+  if (!desktopMode || skateTimer || !win) return;
   desktopDirection = 1;
   skateTimer = setInterval(() => {
-    if (!win || win.isDestroyed() || win.isMinimized()) return stopDesktopSkating();
+    if (!desktopMode || !win || win.isDestroyed() || win.isMinimized()) return stopDesktopSkating();
     const [x, y] = win.getPosition();
     const [width] = win.getSize();
     const area = screen.getDisplayMatching(win.getBounds()).workArea;
@@ -30,6 +31,7 @@ function startDesktopSkating() {
 
 function setDesktopMode(enabled) {
   desktopMode = Boolean(enabled);
+  if (!desktopMode) stopDesktopSkating();
   if (!win || win.isDestroyed()) return;
   if (desktopMode) {
     win.setMinimumSize(150, 150);
@@ -116,7 +118,8 @@ ipcMain.on("pet:drag", (_event, { dx, dy }) => {
   win.setPosition(x + dx, y + dy);
 });
 ipcMain.on("pet:skating", (_event, active) => {
-  if (active) startDesktopSkating();
+  // Renderer skating must never move the full Pet Mode window.
+  if (desktopMode && active) startDesktopSkating();
   else stopDesktopSkating();
 });
 ipcMain.on("pet:minimize", () => win?.minimize());
