@@ -66,6 +66,8 @@ function drawPip(now) {
   ctx.imageSmoothingEnabled = false;
   if (selectedCharacter === "mechanic") {
     ctx.drawImage(sprites, frame * 32, 0, 32, 48, 0, 0, 96, 144);
+  } else if (selectedCharacter === "squeaks") {
+    ctx.drawImage(sprites, frame * 64, 0, 64, 64, 0, 0, 96, 96);
   } else {
     ctx.drawImage(sprites, frame * 32, 0, 32, 32, 0, 0, 96, 96);
   }
