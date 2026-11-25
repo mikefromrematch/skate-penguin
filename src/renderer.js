@@ -67,7 +67,7 @@ function drawPip(now) {
   if (selectedCharacter === "mechanic") {
     ctx.drawImage(sprites, frame * 32, 0, 32, 48, 0, 0, 96, 144);
   } else if (selectedCharacter === "squeaks") {
-    ctx.drawImage(sprites, frame * 64, 0, 64, 64, 0, 0, 96, 96);
+    ctx.drawImage(sprites, frame * 64, 0, 64, 64, -24, -30, 144, 144);
   } else {
     ctx.drawImage(sprites, frame * 32, 0, 32, 32, 0, 0, 96, 96);
   }
@@ -112,7 +112,7 @@ function bounds() {
 
 function frame(now) {
   const currentTime = Date.now();
-  if (state.poseUntil && currentTime > state.poseUntil) setPose(selectedCharacter === "mechanic" ? "skate" : "idle");
+  if (state.poseUntil && currentTime > state.poseUntil) setPose(selectedCharacter === "mechanic" || selectedCharacter === "squeaks" ? "skate" : "idle");
   if ((selectedCharacter === "mechanic" || selectedCharacter === "squeaks") && state.pose === "idle") setPose("skate");
 
   if (state.pose === "idle" && currentTime - state.lastSkate > 10500 && stats.energy > 15) {
