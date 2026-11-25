@@ -9,8 +9,8 @@ const scene = document.querySelector(".scene");
 let desktopMode = false;
 let desktopDirection = 1;
 const defaultStats = { hunger: 20, happy: 80, energy: 90 };
-const characterNames = { pip: "Pip", shredasaurus: "Shredasaurus", mechanic: "The Mechanic" };
-const characterOrder = ["pip", "shredasaurus", "mechanic"];
+const characterNames = { pip: "Pip", shredasaurus: "Shredasaurus", mechanic: "The Mechanic", squeaks: "Squeaks" };
+const characterOrder = ["pip", "shredasaurus", "mechanic", "squeaks"];
 const savedCharacter = localStorage.getItem("selected-pet");
 let selectedCharacter = characterOrder.includes(savedCharacter) ? savedCharacter : "pip";
 function loadStats() {
@@ -40,10 +40,11 @@ const state = {
   lastFrame: 0
 };
 
-const characterSprites = { pip: new Image(), shredasaurus: new Image(), mechanic: new Image() };
+const characterSprites = { pip: new Image(), shredasaurus: new Image(), mechanic: new Image(), squeaks: new Image() };
 characterSprites.pip.src = "../assets/pip-sprites.png";
 characterSprites.shredasaurus.src = "../assets/shredasaurus-sprites.png";
 characterSprites.mechanic.src = "../assets/mechanic-reference-sprites.webp";
+characterSprites.squeaks.src = "../assets/squeaks-sprites.svg";
 const banana = document.getElementById("banana");
 
 function drawPip(now) {
@@ -54,15 +55,19 @@ function drawPip(now) {
     ? { idle: [0, 1, 2, 3], skate: [4, 5], trick: [9, 10], jump: [8, 9], happy: [10], surprised: [8], sad: [11], fall: [8], sleep: [0] }
     : selectedCharacter === "shredasaurus"
       ? { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 8], jump: [7], happy: [9], surprised: [10], sad: [10], fall: [10], sleep: [11] }
+      : selectedCharacter === "squeaks"
+      ? { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7], jump: [8], happy: [9], surprised: [10], sad: [10], fall: [10], sleep: [11] }
       : { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7], jump: [8], happy: [8], surprised: [9], sad: [10], fall: [10], sleep: [11] };
   const sequence = frames[state.pose] || frames.idle;
-  const speed = state.pose === "skate" ? (selectedCharacter === "mechanic" ? 320 : 135)
+  const speed = state.pose === "skate" ? (selectedCharacter === "mechanic" || selectedCharacter === "squeaks" ? 260 : 135)
     : state.pose === "trick" ? 165
     : state.pose === "idle" ? 520 : 210;
   const frame = sequence[Math.floor(now / speed) % sequence.length];
   ctx.imageSmoothingEnabled = false;
   if (selectedCharacter === "mechanic") {
     ctx.drawImage(sprites, frame * 32, 0, 32, 48, 0, 0, 96, 144);
+  } else if (selectedCharacter === "squeaks") {
+    ctx.drawImage(sprites, frame * 64, 0, 64, 64, -24, -30, 144, 144);
   } else {
     ctx.drawImage(sprites, frame * 32, 0, 32, 32, 0, 0, 96, 96);
   }
@@ -107,8 +112,8 @@ function bounds() {
 
 function frame(now) {
   const currentTime = Date.now();
-  if (state.poseUntil && currentTime > state.poseUntil) setPose(selectedCharacter === "mechanic" ? "skate" : "idle");
-  if (selectedCharacter === "mechanic" && state.pose === "idle") setPose("skate");
+  if (state.poseUntil && currentTime > state.poseUntil) setPose(selectedCharacter === "mechanic" || selectedCharacter === "squeaks" ? "skate" : "idle");
+  if ((selectedCharacter === "mechanic" || selectedCharacter === "squeaks") && state.pose === "idle") setPose("skate");
 
   if (state.pose === "idle" && currentTime - state.lastSkate > 10500 && stats.energy > 15) {
     state.lastSkate = currentTime;
@@ -118,7 +123,7 @@ function frame(now) {
 
   if (state.pose === "skate" || state.pose === "trick") {
     const elapsed = state.lastFrame ? Math.min(40, now - state.lastFrame) : 16;
-    state.x += state.direction * elapsed * (selectedCharacter === "mechanic" ? 0.026 : 0.055);
+    state.x += state.direction * elapsed * (selectedCharacter === "mechanic" ? 0.026 : selectedCharacter === "squeaks" ? 0.038 : 0.055);
     if (state.x >= bounds()) {
       state.x = bounds();
       state.direction = -1;
@@ -182,6 +187,7 @@ const switchCharacterButton = document.getElementById("switch-character");
 function refreshCharacterLabel() {
   const name = characterNames[selectedCharacter];
   pet.classList.toggle("mechanic", selectedCharacter === "mechanic");
+  pet.classList.toggle("squeaks", selectedCharacter === "squeaks");
   document.getElementById("brand-name").textContent = name.toUpperCase();
   switchCharacterButton.textContent = "Switch Pet ↻";
   const nextCharacter = characterOrder[(characterOrder.indexOf(selectedCharacter) + 1) % characterOrder.length];
@@ -199,7 +205,7 @@ switchCharacterButton.onclick = () => {
   setPose(selectedCharacter === "mechanic" ? "skate" : "idle");
   refreshCharacterLabel();
   update();
-  say(selectedCharacter === "shredasaurus" ? "Shredasaurus is ready to shred! 😎" : selectedCharacter === "mechanic" ? "The Mechanic is chasing that banana! 🍌" : "Pip is back on the board! 🐧");
+  say(selectedCharacter === "shredasaurus" ? "Shredasaurus is ready to shred! 😎" : selectedCharacter === "mechanic" ? "The Mechanic is chasing that banana! 🍌" : selectedCharacter === "squeaks" ? "Squeaks is ready to tail-surf! 🐿️" : "Pip is back on the board! 🐧");
 };
 refreshCharacterLabel();
 
@@ -219,7 +225,7 @@ pet.onclick = () => {
     setTimeout(() => banana.classList.remove("banana-grabbed"), 650);
     animate("jump", 720);
   } else {
-    const greetings = selectedCharacter === "shredasaurus" ? ["Too cool. 😎", "ROAR means hello!", "Watch this trick!", "Tiny arms, BIG style."] : ["Boop!", "What's up?", "Skate or die!", "🐧"];
+    const greetings = selectedCharacter === "shredasaurus" ? ["Too cool. 😎", "ROAR means hello!", "Watch this trick!", "Tiny arms, BIG style."] : selectedCharacter === "squeaks" ? ["Tail-surf time!", "Hang ten! 🐿️", "Squeak squeak!", "Look at my tail!"] : ["Boop!", "What's up?", "Skate or die!", "🐧"];
     say(greetings[Math.floor(Math.random() * greetings.length)]);
     animate("jump", 650);
   }

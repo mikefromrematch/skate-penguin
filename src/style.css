@@ -77,3 +77,9 @@ body.desktop-mode .shadow { opacity: .28; }
 
 /* The Mechanic glides smoothly: no rocking or vertical skate bob. */
 .pet-wrap.mechanic.skating { animation: none !important; }
+
+/* Squeaks: tail-surfing squirrel with a blue bandana. */
+.pet-wrap.squeaks canvas { height: 96px; top: 25px; }
+.pet-wrap.squeaks .shadow { bottom: 31px; width: 72px; left: 22px; }
+.pet-wrap.squeaks.skating { animation: none !important; }
+.pet-wrap.squeaks.jumping { animation: jump .48s ease-in-out 1; }
