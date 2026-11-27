@@ -44,7 +44,7 @@ const characterSprites = { pip: new Image(), shredasaurus: new Image(), mechanic
 characterSprites.pip.src = "../assets/pip-sprites.png";
 characterSprites.shredasaurus.src = "../assets/shredasaurus-sprites.png";
 characterSprites.mechanic.src = "../assets/mechanic-reference-sprites.webp";
-characterSprites.squeaks.src = "../assets/squeaks-sprites.svg";
+characterSprites.squeaks.src = "../assets/squeaks-spritesheet.png";
 const banana = document.getElementById("banana");
 
 function drawPip(now) {
@@ -56,7 +56,7 @@ function drawPip(now) {
     : selectedCharacter === "shredasaurus"
       ? { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 8], jump: [7], happy: [9], surprised: [10], sad: [10], fall: [10], sleep: [11] }
       : selectedCharacter === "squeaks"
-      ? { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7], jump: [8], happy: [9], surprised: [10], sad: [10], fall: [10], sleep: [11] }
+      ? { idle: [0, 1, 2, 3], skate: state.direction > 0 ? [4, 5, 6, 7, 8, 9] : [10, 11, 12, 13, 14, 15], trick: [16, 17, 18, 19, 20], jump: [16, 17, 18, 19, 20], happy: [0, 1, 2, 3], surprised: [16, 17, 18, 19, 20], sad: [0], fall: [20], sleep: [0] }
       : { idle: [0, 1, 2], skate: [3, 4, 5], trick: [6, 7], jump: [8], happy: [8], surprised: [9], sad: [10], fall: [10], sleep: [11] };
   const sequence = frames[state.pose] || frames.idle;
   const speed = state.pose === "skate" ? (selectedCharacter === "mechanic" || selectedCharacter === "squeaks" ? 260 : 135)
@@ -67,7 +67,7 @@ function drawPip(now) {
   if (selectedCharacter === "mechanic") {
     ctx.drawImage(sprites, frame * 32, 0, 32, 48, 0, 0, 96, 144);
   } else if (selectedCharacter === "squeaks") {
-    ctx.drawImage(sprites, frame * 64, 0, 64, 64, -24, -30, 144, 144);
+    ctx.drawImage(sprites, frame * 32, 0, 32, 32, -24, -30, 144, 144);
   } else {
     ctx.drawImage(sprites, frame * 32, 0, 32, 32, 0, 0, 96, 96);
   }
@@ -148,7 +148,7 @@ function frame(now) {
   }
   state.lastFrame = now;
   pet.style.left = state.x + "px";
-  pet.style.transform = "translateX(0) scaleX(" + (desktopMode ? desktopDirection : state.direction) + ")";
+  pet.style.transform = "translateX(0) scaleX(" + (selectedCharacter === "squeaks" ? 1 : desktopMode ? desktopDirection : state.direction) + ")";
   drawPip(now);
   requestAnimationFrame(frame);
 }
